@@ -9,7 +9,6 @@ const log = require('../util/log').log;
 const wrap = require('../util/asyncwrap').wrap;
 const APIResult = require('../util/api-result');
 
-const pool_path = path.resolve(`${__dirname}/../${pool.config.genesis_txn}`);
 const http_secured = process.env.IDC_CA_SSL ? 'http://' : 'https://';
 const ENDPOINT_PATH = `${http_secured}${process.env.IDC_CA_DOMAIN_HOST}:${process.env.IDC_CA_DOMAIN_PORT}/ca/api/indy/`;
 let pool_info = "";
@@ -33,7 +32,10 @@ async function handleRequest(req) {
     const senderDid = req.body.endpoint_did,
         senderKey = req.body.verkey,
         token = req.body.endpoint;
-    if (!pool_info) pool_info = await fs.readFileSync(pool_path, 'utf8');
+    if (!pool_info) {
+        const pool_path = path.resolve(pool.config.genesis_txn);
+        pool_info = await fs.readFileSync(pool_path, 'utf8');
+    }
     let myEndpointDid;
     try {
         await lib.sdk.storeTheirDid(req.wallet.handle, { did: senderDid, verkey: senderKey });
